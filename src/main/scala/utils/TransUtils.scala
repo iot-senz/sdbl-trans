@@ -45,7 +45,7 @@ object TransUtils {
     val c = "04" // transaction code[fund transfer]
     val d = "00000002" // TID, 8 digits TODO in prod 00000001
     val e = "000000000000002" // MID, 15 digits TODO in prod 000000000000001
-    val f = "000001" // trace no, 6 digits TODO generate this
+    val f = "000001" // trace no, 6 digits TODO gen             erate this
     val g = getTransTime // date time MMDDHHMMSS
     val h = "0001" // application ID, 4 digits
     val i = "0000000000000000" // private data, 16 digits
