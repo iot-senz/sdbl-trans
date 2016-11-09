@@ -26,13 +26,19 @@ object TransUtils {
   }
 
   def generateFundTransMsg(trans: Trans) = {
-    val transId = "0000000000000001" // transaction ID, 16 digits // TODO generate unique value
+    //val transId = "0000000000000001" // transaction ID, 16 digits // TODO generate unique value
+    val rnd = new scala.util.Random               //  genaration of transaction ID
+    val randomInt = 100000 + rnd.nextInt(900000) //  random num of 6 digits
+    val transId = s"$randomInt$getTransTime"      // random in of length 6 and time stamp of 10 digits
+
     val payMode = "02" // pay mode
     val epinb = "ffffffffffffffff" // ePINB, 16 digits
     val offset = "ffffffffffff" // offset, 12 digits
     val mobileNo = "0775432015" // customers mobile no
-    val fromAcc = "343434343434" // TODO trans.agent // from account, bank account, 12 digits
-    val toAcc = "646464646464" // TODO trans.account // to account, customer account, 12 digits
+    //val fromAcc = "343434343434" // TODO trans.agent // from account, bank account, 12 digits
+    val fromAcc = trans.agent
+    //val toAcc = "646464646464" // TODO trans.account // to account, customer account, 12 digits
+    val toAcc = trans.customer
     val amnt = "%012d".format(trans.amount) // amount, 12 digits
     //val amnt = trans.amount // amount, 12 digits
 
@@ -40,12 +46,14 @@ object TransUtils {
   }
 
   def generateEsh = {
-    val a = "SMS" // incoming channel mode[mobile]
+    val a = "DEP" // incoming channel mode[mobile]
     val b = "01" // transaction process type[financial]
-    val c = "04" // transaction code[fund transfer]
-    val d = "00000002" // TID, 8 digits TODO in prod 00000001
-    val e = "000000000000002" // MID, 15 digits TODO in prod 000000000000001
-    val f = "000001" // trace no, 6 digits TODO generate this
+    val c = "13" // transaction code[Cash deposit{UCSC}]
+    val d = "00000001" // TID, 8 digits TODO in prod 00000001
+    val e = "000000000000001" // MID, 15 digits TODO in prod 000000000000001
+    //val f = "000001" // trace no, 6 digits TODO generate this
+    val rnd = new scala.util.Random               // genaration of trace no
+    val f = 100000 + rnd.nextInt(900000)     // genaration of trace no
     val g = getTransTime // date time MMDDHHMMSS
     val h = "0001" // application ID, 4 digits
     val i = "0000000000000000" // private data, 16 digits
