@@ -27,6 +27,7 @@ object TransUtils {
 
   def generateFundTransMsg(trans: Trans) = {
     //val transId = "0000000000000001" // transaction ID, 16 digits // TODO generate unique value
+    val pip = "|"   // terminating pip for all attributes
     val rnd = new scala.util.Random               //  genaration of transaction ID
     val randomInt = 100000 + rnd.nextInt(900000) //  random num of 6 digits
     val transId = s"$randomInt$getTransTime"      // random in of length 6 and time stamp of 10 digits
@@ -42,10 +43,12 @@ object TransUtils {
     val amnt = "%012d".format(trans.amount) // amount, 12 digits
     //val amnt = trans.amount // amount, 12 digits
 
-    s"$transId$payMode$epinb$offset$mobileNo$fromAcc$toAcc$amnt"
+   // s"$transId$payMode$epinb$offset$mobileNo$fromAcc$toAcc$amnt"
+    s"$transId$pip$payMode$pip$epinb$pip$offset$pip$mobileNo$pip$fromAcc$pip$toAcc$pip$amnt"
   }
 
   def generateEsh = {
+    val pip = "|"      // add a pip after the ESH
     val a = "DEP" // incoming channel mode[mobile]
     val b = "01" // transaction process type[financial]
     val c = "13" // transaction code[Cash deposit{UCSC}]
@@ -58,7 +61,9 @@ object TransUtils {
     val h = "0001" // application ID, 4 digits
     val i = "0000000000000000" // private data, 16 digits
 
-    s"$a$b$c$d$e$f$g$h$i"
+
+    //s"$a$b$c$d$e$f$g$h$i"
+    s"$a$b$c$d$e$f$g$h$i$pip"
   }
 
   def generateHeader(msg: String) = {
@@ -76,7 +81,7 @@ object TransUtils {
   }
 
   def getTransResp(response: String) = {
-    TransResp(response.substring(0, 70), response.substring(70, 72), response.substring(72))
+    TransResp(response.substring(0, 70), response.substring(74, 76), response.substring(72))
   }
 
 }
@@ -97,3 +102,15 @@ object TransUtils {
 //      println("Invalid response " + transResp)
 //  }
 //}
+
+
+/*
+REQ  DEP011300000002000000000000002936049111010133600010000000000000000|9831111110101336|02|ffffffffffffffff|ffffffffffff|0775432015|111122223333|111111111111|000000411111
+RES  DEP0113000000020000000000000029360492016-11-10 15:40:56.174000000000000000000|111015405629|678912
+
+REQ  DEP011300000002000000000000002388662111010200700010000000000000000|7726791110102007|02|ffffffffffffffff|ffffffffffff|0775432015|111122223333|111111111111|000000111111
+RES  DEP0113000000020000000000000023886622016-11-10 15:47:27.084000000000000000000|111015472707|678912
+
+REQ  DEP011300000002000000000000002708494111010220500010000000000000000|3354241110102205|02|ffffffffffffffff|ffffffffffff|0775432015|111122223333|222222222222|000000222222
+RES  DEP0113000000020000000000000027084942016-11-10 15:49:24.813000000000000000000|111015492433|678912
+*/
