@@ -106,7 +106,7 @@ trait TransHandlerComp {
 
         case TransResp(_, status, _) =>
           logger.error("Transaction fail with stats: " + status)
-          transDb.updateTrans(Trans(trans.agent, trans.customer, trans.amount, trans.timestamp, "FAIL" + status))
+          transDb.updateTrans(Trans(trans.agent, trans.customer, trans.amount, trans.timestamp, "FAIL-" + status))
           val senz = s"DATA #msg PUTFAIL @${trans.agent} ^sdbltrans"
           senzSender ! SenzMsg(senz)
 
