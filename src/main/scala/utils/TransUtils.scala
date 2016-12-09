@@ -81,7 +81,7 @@ object TransUtils {
   }
 
   def getTransResp(response: String) = {
-    TransResp(response.substring(0, 70), response.substring(74, 76), response.substring(72))
+    TransResp(response.substring(0, 70), response.substring(77, 79), response.substring(72))
   }
 
 }

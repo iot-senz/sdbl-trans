@@ -100,20 +100,32 @@ trait TransHandlerComp {
       TransUtils.getTransResp(response) match {
         case TransResp(_, "00", _) =>
           logger.debug("Transaction done")
+          transDb.updateTrans(Trans(trans.agent, trans.customer, trans.amount, trans.timestamp, "DONE"))
+          val senz = s"DATA #msg PUTDONE @${trans.agent} ^sdbltrans"
+          senzSender ! SenzMsg(senz)
+
         case TransResp(_, status, _) =>
           logger.error("Transaction fail with stats: " + status)
+          transDb.updateTrans(Trans(trans.agent, trans.customer, trans.amount, trans.timestamp, "FAIL" + status))
+          val senz = s"DATA #msg PUTFAIL @${trans.agent} ^sdbltrans"
+          senzSender ! SenzMsg(senz)
+
         case transResp =>
           logger.error("Invalid response " + transResp)
+          transDb.updateTrans(Trans(trans.agent, trans.customer, trans.amount, trans.timestamp, "FAIL Invalid Response"))
+          val senz = s"DATA #msg PUTFAIL @${trans.agent} ^sdbltrans"
+          senzSender ! SenzMsg(senz)
+
       }
 
       // update db
       // TODO update according to the status
-      transDb.updateTrans(Trans(trans.agent, trans.customer, trans.amount, trans.timestamp, "DONE"))
+      //transDb.updateTrans(Trans(trans.agent, trans.customer, trans.amount, trans.timestamp, "DONE"))
 
       // send status back
       // TODO status according to the response
-      val senz = s"DATA #msg PUTDONE @${trans.agent} ^sdbltrans"
-      senzSender ! SenzMsg(senz)
+      //val senz = s"DATA #msg PUTDONE @${trans.agent} ^sdbltrans"
+      //senzSender ! SenzMsg(senz)
 
       // disconnect from tcp
       connection ! Close
