@@ -52,8 +52,8 @@ object TransUtils {
     val a = "DEP" // incoming channel mode[mobile]
     val b = "01" // transaction process type[financial]
     val c = "13" // transaction code[Cash deposit{UCSC}]
-    val d = "00000001" // TID, 8 digits TODO in prod 00000001
-    val e = "000000000000001" // MID, 15 digits TODO in prod 000000000000001
+    val d = "00000002" // TID, 8 digits TODO in prod 00000001
+    val e = "000000000000002" // MID, 15 digits TODO in prod 000000000000001
     //val f = "000001" // trace no, 6 digits TODO generate this
     val rnd = new scala.util.Random               // genaration of trace no
     val f = 100000 + rnd.nextInt(900000)     // genaration of trace no
