@@ -12,8 +12,9 @@ object TransUtils {
     val customer = senz.attributes.getOrElse("acc", "")
     val amnt = senz.attributes.getOrElse("amnt", "").toInt
     val timestamp = senz.attributes.getOrElse("time", "")
+    val mobile = senz.attributes.getOrElse("mobile", "")
 
-    Trans(agent, customer, amnt, timestamp, "PENDING")
+    Trans(agent, customer, amnt, timestamp, mobile, "PENDING")
   }
 
   def getTransMsg(trans: Trans) = {
@@ -23,6 +24,7 @@ object TransUtils {
     val header = generateHeader(msg)
 
     TransMsg(header ++ msg.getBytes)
+
   }
 
   def generateFundTransMsg(trans: Trans) = {
@@ -35,12 +37,13 @@ object TransUtils {
     val payMode = "02" // pay mode
     val epinb = "ffffffffffffffff" // ePINB, 16 digits
     val offset = "ffffffffffff" // offset, 12 digits
-    val mobileNo = "0775432015" // customers mobile no
+    val mobileNo = trans.mobile
+    //val mobileNo = "0775432015" // customers mobile no
     //val fromAcc = "343434343434" // TODO trans.agent // from account, bank account, 12 digits
     val fromAcc = trans.agent
     //val toAcc = "646464646464" // TODO trans.account // to account, customer account, 12 digits
     val toAcc = trans.customer
-    val amnt = "%012d".format(trans.amount) // amount, 12 digits
+    val amnt = "%012d".format(trans.amount * 100  ) // amount, 12 digits
     //val amnt = trans.amount // amount, 12 digits
 
    // s"$transId$payMode$epinb$offset$mobileNo$fromAcc$toAcc$amnt"

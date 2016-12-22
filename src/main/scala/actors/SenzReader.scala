@@ -29,9 +29,9 @@ class SenzReader extends Actor {
       // listen for user inputs form commandline
       println()
       println()
-      println("-----------------------------------------------------------------")
-      println("  ENTER #SENZ[SHARE #acc #amnt #time #massage @agent ^sdbltrans]")
-      println("-----------------------------------------------------------------")
+      println("--------------------------------------------------------------------------")
+      println("  ENTER #SENZ[SHARE #acc #amnt #time #massage #mobile @agent ^sdbltrans]")
+      println("--------------------------------------------------------------------------")
       println()
 
       // read user input from the command line

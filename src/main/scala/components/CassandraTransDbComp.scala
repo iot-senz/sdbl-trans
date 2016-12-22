@@ -21,7 +21,7 @@ trait CassandraTransDbComp extends TransDbComp {
       val sqlCreateTableAgent = "CREATE TABLE IF NOT EXISTS agent (account TEXT PRIMARY KEY, branch TEXT);"
 
       // queries to create trans
-      val sqlCreateTableTrans = "CREATE TABLE IF NOT EXISTS trans (agent TEXT, customer TEXT, amount INT, timestamp TEXT, status TEXT, PRIMARY KEY(agent, timestamp));"
+      val sqlCreateTableTrans = "CREATE TABLE IF NOT EXISTS trans (agent TEXT, customer TEXT, amount INT, timestamp TEXT, mobile TEXT, status TEXT, PRIMARY KEY(agent, timestamp));"
       val sqlCreateIndexTransStatus = "CREATE INDEX trans_status on trans(status);"
     }
 
@@ -55,6 +55,7 @@ trait CassandraTransDbComp extends TransDbComp {
         .value("customer", trans.customer)
         .value("amount", trans.amount)
         .value("timestamp", trans.timestamp)
+        .value("mobile", trans.mobile)
         .value("status", trans.status)
 
       session.execute(statement)
@@ -64,7 +65,7 @@ trait CassandraTransDbComp extends TransDbComp {
       // update query
       val statement = QueryBuilder.update("trans")
         .`with`(set("status", trans.status))
-        .where(QueryBuilder.eq("timestamp", trans.timestamp)).and(QueryBuilder.eq("agent", trans.agent))
+          .where(QueryBuilder.eq("timestamp", trans.timestamp)).and(QueryBuilder.eq("agent", trans.agent))
 
       session.execute(statement)
     }
@@ -79,7 +80,7 @@ trait CassandraTransDbComp extends TransDbComp {
       val resultSet = session.execute(selectStmt)
       val row = resultSet.one()
 
-      if (row != null) Some(Trans(row.getString("agent"), row.getString("customer"), row.getInt("amount"), row.getString("timestamp"), row.getString("status")))
+      if (row != null) Some(Trans(row.getString("agent"), row.getString("customer"), row.getInt("amount"), row.getString("timestamp"), row.getString("mobile"), row.getString("status")))
       else None
     }
   }
