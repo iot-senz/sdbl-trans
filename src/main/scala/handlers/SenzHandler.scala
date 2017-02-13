@@ -7,7 +7,7 @@ import components.{CassandraTransDbComp, TransDbComp}
 import db.SenzCassandraCluster
 import org.slf4j.LoggerFactory
 import protocols.{Senz, SenzType, SignatureVerificationFail}
-import utils.TransUtils
+import utils.{AccInquiryUtils, TransUtils}
 
 class SenzHandler {
   this: TransDbComp =>
@@ -54,26 +54,41 @@ class SenzHandler {
     }
 
     def handlePut(senz: Senz)(implicit context: ActorContext) = {
-      // create trans form senz
-      val trans = TransUtils.getTrans(senz)
-
-      // check trans exists
-      transDb.getTrans(trans.agent, trans.timestamp) match {
-        case Some(existingTrans) =>
-          // already existing trans
-          logger.debug("Trans exists, no need to recreate: " + "[" + existingTrans.agent + ", " + existingTrans.customer + ", " + existingTrans.amount + ", " + existingTrans.mobile +  "]")
-        case None =>
-          // new trans, so create and process it
-          logger.debug("New Trans, process it: " + "[" + trans.agent + ", " + trans.customer + ", " + trans.amount + ", " + trans.mobile + "]")
-
-          // save in database
-          transDb.createTrans(trans)
-
-          // transaction request via trans actor
-          val transHandlerComp = new TransHandlerComp with CassandraTransDbComp with SenzCassandraCluster
-          context.actorOf(transHandlerComp.TransHandler.props(trans))
+      logger.debug(" and Came here ............Received account_inquiry  ")
+      // check if the request is a transaction or a account Number list request
+      if (senz.attributes.contains("idno")) {
+        val idNumber = senz.attributes.getOrElse("idno", "")
+        logger.debug("Received account_inquiry " + idNumber + " ....")
+        val accinq = AccInquiryUtils.getIdNumber(senz)
+        val accHandlerComp = new AccHandlerComp {}
+        context.actorOf(accHandlerComp.AccountInquryHandler.props(accinq))
       }
+
+      else if (senz.attributes.contains("amnt")) {
+        // create trans form senz
+        val trans = TransUtils.getTrans(senz)
+
+
+        // check trans exists
+        transDb.getTrans(trans.agent, trans.timestamp) match {
+          case Some(existingTrans) =>
+            // already existing trans
+            logger.debug("Trans exists, no need to recreate: " + "[" + existingTrans.agent + ", " + existingTrans.customer + ", " + existingTrans.amount + ", " + existingTrans.mobile + "]")
+          case None =>
+            // new trans, so create and process it
+            logger.debug("New Trans, process it: " + "[" + trans.agent + ", " + trans.customer + ", " + trans.amount + ", " + trans.mobile + "]")
+
+            // save in database
+            transDb.createTrans(trans)
+
+            // transaction request via trans actor
+            val transHandlerComp = new TransHandlerComp with CassandraTransDbComp with SenzCassandraCluster
+            context.actorOf(transHandlerComp.TransHandler.props(trans))
+        }
+      }
+
     }
+
 
     def handleData(senz: Senz)(implicit context: ActorContext) = {
       val regActor = context.actorSelection("/user/SenzSender/RegHandler")

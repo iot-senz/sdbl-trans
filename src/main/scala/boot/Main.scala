@@ -8,6 +8,7 @@ import actors._
 import akka.actor.{Props, ActorSystem}
 import crypto.RSAUtils
 import org.slf4j.LoggerFactory
+import components.CassandraTransDbComp
 import supervision.Parent
 import supervision.Parent.StartParent
 
@@ -19,6 +20,8 @@ object Main extends App {
   def logger = LoggerFactory.getLogger(this.getClass)
 
   logger.debug("Booting application")
+  //create cassandra db tables if they do not exist
+
 
   implicit val system = ActorSystem("senz")
 
@@ -27,6 +30,7 @@ object Main extends App {
 
   // first generate key pair if not already generated
   RSAUtils.initRSAKeys()
+
 
   // start senz sender
   val senzSender = system.actorOf(SenzSender.props(socket), name = "SenzSender")
