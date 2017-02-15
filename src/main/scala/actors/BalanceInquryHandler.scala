@@ -1,7 +1,7 @@
 package actors
 
 /**
-  * Created by senz on 1/30/17.
+  * Created by senz on 2/13/17.
   */
 
 import java.net.{InetAddress, InetSocketAddress}
@@ -11,30 +11,29 @@ import akka.actor.{Actor, ActorRef, Props}
 import akka.io.Tcp._
 import akka.io.{IO, Tcp}
 import akka.util.ByteString
-
 import config.Configuration
 import org.slf4j.LoggerFactory
-import protocols.AccInq
-import utils.AccInquiryUtils
+import protocols.BalInq
+import utils.BalanceUtils
 
 import scala.concurrent.duration._
 
-case class AccInqMsg(msgStream: Array[Byte])
+case class BalInqMsg(msgStream: Array[Byte])
 
-case class AccInqResp(esh: String, resCode: String, authCode: String, accNumbers: String)
+case class BalInqResp(esh: String, resCode: String, authCode: String, balance: String)
 
-case class AccInqTimeout()
+case class BalInqTimeout()
 
+trait BalInqHandlerComp {
 
-trait AccHandlerComp {
-
-  object AccountInquryHandler {
-    def props(accInq: AccInq): Props = Props(new AccountInquryHandler(accInq))
+  object BalanceInquryHandler {
+    def props(balInq: BalInq): Props = Props(new BalanceInquryHandler(balInq))
   }
 
-  class AccountInquryHandler(accInq: AccInq) extends Actor with Configuration {
+  class BalanceInquryHandler(balInq: BalInq) extends Actor with Configuration {
 
     import context._
+
 
     def logger = LoggerFactory.getLogger(this.getClass)
 
@@ -57,15 +56,15 @@ trait AccHandlerComp {
         logger.debug("TCP connected")
 
         // transMsg from trans
-        val accInqmsg = AccInquiryUtils.getAccInqmsg(accInq)
-        val msgStream = new String(accInqmsg.msgStream)
+        val balInqMsg = BalanceUtils.getBalInqMsg(balInq)
+        val msgStream = new String(balInqMsg.msgStream)
 
-        logger.debug("Send AccInqMsg " + msgStream)
+        logger.debug("Send BalInqMsg " + msgStream)
 
         // send AccInqMsg
         val connection = sender()
         connection ! Register(self)
-        connection ! Write(ByteString(accInqmsg.msgStream))
+        connection ! Write(ByteString(balInqMsg.msgStream))
 
         // handler response
         context become {
@@ -91,7 +90,7 @@ trait AccHandlerComp {
             logger.debug("Resend AccInqMsg " + msgStream)
 
             // resend trans
-            connection ! Write(ByteString(accInqmsg.msgStream))
+            connection ! Write(ByteString(balInqMsg.msgStream))
         }
       case CommandFailed(_: Connect) =>
         // failed to connect
@@ -99,45 +98,41 @@ trait AccHandlerComp {
     }
 
     def handleResponse(response: String, connection: ActorRef) = {
-      val pipeSeparated = getAccountsExtracted(response)
+      val balance = getBalanceExtracted(response)
 
       // parse response and get 'AccInqRes'
-      AccInquiryUtils.getAccInqResp(response) match {
-        case AccInqResp(_, "00", _, _) =>
+      BalanceUtils.getBalInqResp(response) match {
+        case BalInqResp(_, "00", _, _) =>
           logger.debug("Account Inquiry done")
 
-          val senz = s"DATA #msg PUTDONE #accounts ${pipeSeparated} @${accInq.agent} ^sdbltrans"
+          val senz = s"DATA #msg PUTDONE #bal ${balance} @${balInq.agent} ^sdbltrans"
           senzSender ! SenzMsg(senz)
 
-        case AccInqResp(_, status, _, _) =>
+        case BalInqResp(_, status, _, _) =>
           logger.error("Account Inquiry fail with stats: " + status)
-          val senz = s"DATA #msg PUTFAIL @${accInq.agent} ^sdbltrans"
+          val senz = s"DATA #msg PUTFAIL @${balInq.agent} ^sdbltrans"
           senzSender ! SenzMsg(senz)
 
-        case accInqResp =>
-          logger.error("Invalid response " + accInqResp)
-          val senz = s"DATA #msg PUTFAIL @${accInq.agent} ^sdbltrans"
+        case balInqResp =>
+          logger.error("Invalid response " + balInqResp)
+          val senz = s"DATA #msg PUTFAIL @${balInq.agent} ^sdbltrans"
           senzSender ! SenzMsg(senz)
 
       }
-
 
       // disconnect from tcp
       connection ! Close
     }
 
-    def getAccountsExtracted(response: String): String = {
-      // get whole string and it might look like this "00000000000"
-      // extract the values from it
-      // replaces spaces with underscore(_) and hash(#) with pipe(|)
-      val spaceWithUnScore = response.substring(100).replace(' ', '_')
-      val pipeReplaced = spaceWithUnScore.replace('#', '|')
+    def getBalanceExtracted(response: String): String = {
 
-      logger.debug("Response Accounts" + pipeReplaced)
-      pipeReplaced
+      val balance = response.substring(88, 100)
+      balance
 
     }
+
 
   }
 
 }
+

@@ -7,7 +7,7 @@ import components.{CassandraTransDbComp, TransDbComp}
 import db.SenzCassandraCluster
 import org.slf4j.LoggerFactory
 import protocols.{Senz, SenzType, SignatureVerificationFail}
-import utils.{AccInquiryUtils, TransUtils}
+import utils.{AccInquiryUtils, BalanceUtils, TransUtils}
 
 class SenzHandler {
   this: TransDbComp =>
@@ -54,14 +54,22 @@ class SenzHandler {
     }
 
     def handlePut(senz: Senz)(implicit context: ActorContext) = {
-      logger.debug(" and Came here ............Received account_inquiry  ")
+
       // check if the request is a transaction or a account Number list request
       if (senz.attributes.contains("idno")) {
         val idNumber = senz.attributes.getOrElse("idno", "")
         logger.debug("Received account_inquiry " + idNumber + " ....")
-        val accinq = AccInquiryUtils.getIdNumber(senz)
+        val accInq = AccInquiryUtils.getIdNumber(senz)
         val accHandlerComp = new AccHandlerComp {}
-        context.actorOf(accHandlerComp.AccountInquryHandler.props(accinq))
+        context.actorOf(accHandlerComp.AccountInquryHandler.props(accInq))
+      }
+
+      else if (senz.attributes.contains("balacc")) {
+        val balAcc = senz.attributes.getOrElse("balacc", "")
+        logger.debug("Received account_inquiry " + balAcc + " ....")
+        val balInq = BalanceUtils.getBalInq(senz)
+        val balInqHandlerComp = new BalInqHandlerComp {}
+        context.actorOf(balInqHandlerComp.BalanceInquryHandler.props(balInq))
       }
 
       else if (senz.attributes.contains("amnt")) {
