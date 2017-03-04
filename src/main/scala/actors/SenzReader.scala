@@ -27,6 +27,15 @@ class SenzReader extends Actor {
   override def receive: Receive = {
     case InitReader =>
       // listen for user inputs form commandline
+
+      println()
+      println()
+      println()
+      println("Enter only the agent account no here containing 12 numbers. For example  010101110000")
+      println("-------------------------------------------------------------------------------------")
+      print("Enter the Agent AccountNo - ")
+
+      /*
       println()
       println()
       println("***** Type the SHARE query in the following format after a successful registration of a android client  *****")
@@ -37,6 +46,7 @@ class SenzReader extends Actor {
       println("-------------------------------------------------------------------------------------------------------------")
       println()
 
+      */
       /*
       Here
             #amnt [type - RECEIVE] is for the purpose of getting transaction amount from the android client
@@ -77,8 +87,8 @@ class SenzReader extends Actor {
 
 
       // read user input from the command line
-      val inputSenz = scala.io.StdIn.readLine()
-
+      val inputUser = scala.io.StdIn.readLine().trim
+      val inputSenz = "SHARE #acc #amnt #time #massage #mobile #idno #accounts #bal #balacc #mini #ministat @" + inputUser + " ^sdbltrans"
       logger.debug("Input Senz: " + inputSenz)
 
       // validate senz

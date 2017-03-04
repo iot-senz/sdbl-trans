@@ -41,7 +41,7 @@ object BalanceUtils {
     // pay mode
     val ePINB = "ffffffffffffffff"
     // ePINB, 16 digits
-    val offset = "ffffffffffff" // offset, 12 digits
+    val offset = "000000000000" // offset, 12 digits
 
     val balAcc = balInq.customer
     val mobileNo = "0123456789" // a hard coded value for the mobile
@@ -52,15 +52,15 @@ object BalanceUtils {
   def generateEsh = {
     val pip = "|"
     // add a pip after the ESH
-    val a = "SMS"
+    val a = "DEP"
     // incoming channel mode[mobile]
     val b = "01"
     // transaction process type[financial]
     val c = "03"
     // transaction code[Cash deposit{UCSC}]
-    val d = "00000002"
+    val d = "00000001"
     // TID, 8 digits
-    val e = "000000000000002"
+    val e = "000000000000001"
     // MID, 15 digits
     val rnd = new scala.util.Random
     // genaration of trace no

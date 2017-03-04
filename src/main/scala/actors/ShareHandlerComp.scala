@@ -50,6 +50,7 @@ trait ShareHandlerComp {
         logger.debug("SHARE received: " + senzMsg)
 
         // TODO only share senz, if senz not already shared with given agent
+        // TODO Un share senz
         senzSender ! SenzMsg(senzMsg)
       case ShareDone =>
         // success
